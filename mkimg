@@ -1,0 +1,5 @@
+#!/bin/bash
+a=`hdid a.img | cut -f 3`
+cp -fv boot/boot.bin $a
+cp -fv kernel.bin $a
+umount $a

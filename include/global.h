@@ -24,6 +24,11 @@ EXTERN	u32		k_reenter;
 EXTERN	TSS		tss;
 EXTERN	PROCESS*	p_proc_ready;
 
+//xiaoge
+EXTERN 	int 	sem_empty;
+EXTERN 	int 	sem_full;
+EXTERN 	int 	sem_buffer[1];
+
 extern	PROCESS		proc_table[];
 extern	char		task_stack[];
 extern  TASK            task_table[];

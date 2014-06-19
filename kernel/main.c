@@ -29,7 +29,11 @@ PUBLIC int kernel_main()
 	for (i = 0; i < NR_TASKS; i++) {
 		strcpy(p_proc->p_name, p_task->name);	// name of the process
 		p_proc->pid = i;			// pid
-
+		/*
+		 * 初始化睡眠ticks
+		 */
+		p_proc->sleep_ticks = -1;
+		
 		p_proc->ldt_sel = selector_ldt;
 
 		memcpy(&p_proc->ldts[0], &gdt[SELECTOR_KERNEL_CS >> 3],
@@ -61,13 +65,9 @@ PUBLIC int kernel_main()
 		selector_ldt += 1 << 3;
 	}
 
-	proc_table[0].ticks = proc_table[0].priority = 150; /* 0x96 */
-	proc_table[1].ticks = proc_table[1].priority =  50; /* 0x32 */
-	proc_table[2].ticks = proc_table[2].priority =  30; /* 0x1E */
-
 	k_reenter = 0;
 	ticks = 0;
-
+	
 	p_proc_ready	= proc_table;
 
         /* 初始化 8253 PIT */
@@ -78,52 +78,52 @@ PUBLIC int kernel_main()
         put_irq_handler(CLOCK_IRQ, clock_handler); /* 设定时钟中断处理程序 */
         enable_irq(CLOCK_IRQ);                     /* 让8259A可以接收时钟中断 */
 
-	disp_pos = 0;
-	for (i = 0; i < 80*25; i++) {
-		disp_str(" ");
-	}
-	disp_pos = 0;
-
 	restart();
 
 	while(1){}
 }
 
-/*======================================================================*
-                               TestA
- *======================================================================*/
-void TestA()
-{
-	int i = 0;
-	while (1) {
-		disp_color_str("A.", BRIGHT | MAKE_COLOR(BLACK, RED));
-		disp_int(get_ticks());
-		milli_delay(200);
+
+void TaskSystem() {
+	while(1) {
+		u_disp_str(" sys. ");
+		milli_delay(5000);
+	}
+}
+/*
+ * 生产者没有睡睡眠，但同样会被卡住，因为消费者在睡眠时没有消费，则生产者会被p/v卡住
+ */
+void TaskProducer() {
+	while(1) {
+		//sem_p(?)
+
+		u_disp_str("p.");
+
+		//sem_v(?)
+	}
+}
+/*
+ * 两个消费者睡眠时间不一样，会看得出A消费的次数更多。
+ */
+void TaskConsumerA() {
+	while(1) {
+		//sem_p(?)
+
+		u_disp_str("ca.");
+
+		//sem_v(?)
+
+		sleep(1000);
+	
 	}
 }
 
-/*======================================================================*
-                               TestB
- *======================================================================*/
-void TestB()
-{
-	int i = 0x1000;
-	while(1){
-		disp_color_str("B.", BRIGHT | MAKE_COLOR(BLACK, RED));
-		disp_int(get_ticks());
-		milli_delay(200);
-	}
-}
+void TaskConsumerB() {
+	while(1) {
+		//sem_p(?)
+		u_disp_str("cb.");
 
-/*======================================================================*
-                               TestB
- *======================================================================*/
-void TestC()
-{
-	int i = 0x2000;
-	while(1){
-		disp_color_str("C.", BRIGHT | MAKE_COLOR(BLACK, RED));
-		disp_int(get_ticks());
-		milli_delay(200);
+		//sem_v(?)
+		sleep(3000);
 	}
 }

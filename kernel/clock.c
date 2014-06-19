@@ -20,13 +20,18 @@
 PUBLIC void clock_handler(int irq)
 {
 	ticks++;
-	p_proc_ready->ticks--;
-
 	if (k_reenter != 0) {
 		return;
 	}
-
+	
+	PROCESS* p = proc_table;
+	for(;p<proc_table + NR_TASKS;p++) {
+		if(p->sleep_ticks>=0) {
+			p->sleep_ticks--;
+		}
+	}
 	schedule();
+
 }
 
 /*======================================================================*

@@ -22,9 +22,14 @@ PUBLIC void	delay(int time);
 void restart();
 
 /* main.c */
+/* xiaoge
 void TestA();
 void TestB();
-void TestC();
+void TestC(); */
+void TaskSystem();
+void TaskProducer();
+void TaskConsumerA();
+void TaskConsumerB();
 
 /* i8259.c */
 PUBLIC void put_irq_handler(int irq, irq_handler handler);
@@ -36,10 +41,18 @@ PUBLIC void clock_handler(int irq);
 
 /* 以下是系统调用相关 */
 
-/* proc.c */
 PUBLIC  int     sys_get_ticks();        /* sys_call */
+PUBLIC  int     sys_disp_str(char* str);
+PUBLIC 	 int     sys_sleep(int milli_sec);
+PUBLIC  int     sys_sem_p(int m);
+PUBLIC  int     sys_sem_v(int m);
 
 /* syscall.asm */
 PUBLIC  void    sys_call();             /* int_handler */
-PUBLIC  int     get_ticks();
+PUBLIC  int       get_ticks();
+PUBLIC  void    u_disp_str(char* str);
+PUBLIC  void    sleep(int milli_sec);
+PUBLIC  void    sem_p(int m);
+PUBLIC  void    sem_v(int m);
+
 
