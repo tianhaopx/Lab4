@@ -12,6 +12,12 @@
 #endif
 
 EXTERN	int		ticks;
+EXTERN 	int 	pv;
+EXTERN  int 	in;
+EXTERN 	int 	out;
+EXTERN	SEMAPHORE		empty;
+EXTERN  SEMAPHORE		full;
+EXTERN  SEMAPHORE		mutex;
 
 EXTERN	int		disp_pos;
 EXTERN	u8		gdt_ptr[6];	// 0~15:Limit  16~47:Base
@@ -28,4 +34,6 @@ extern	PROCESS		proc_table[];
 extern	char		task_stack[];
 extern  TASK            task_table[];
 extern	irq_handler	irq_table[];
+extern 	int 		B[];
+
 

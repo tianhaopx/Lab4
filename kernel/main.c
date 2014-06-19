@@ -8,10 +8,12 @@
 #include "type.h"
 #include "const.h"
 #include "protect.h"
-#include "proto.h"
 #include "string.h"
 #include "proc.h"
 #include "global.h"
+#include "proto.h"
+
+
 
 
 /*======================================================================*
@@ -62,12 +64,33 @@ PUBLIC int kernel_main()
 	}
 
 	proc_table[0].ticks = proc_table[0].priority = 150; /* 0x96 */
-	proc_table[1].ticks = proc_table[1].priority =  50; /* 0x32 */
-	proc_table[2].ticks = proc_table[2].priority =  30; /* 0x1E */
+	proc_table[1].ticks = proc_table[1].priority = 50; /* 0x32 */
+	proc_table[2].ticks = proc_table[2].priority = 30; /* 0x1E */
+	proc_table[3].ticks = proc_table[3].priority = 30;
+
+	proc_table[0].sleep_ticks=0;
+	proc_table[1].sleep_ticks=0;
+	proc_table[2].sleep_ticks=0;
+	proc_table[3].sleep_ticks=0;
+
+	proc_table[0].ready=1;
+	proc_table[1].ready=1;
+	proc_table[2].ready=1;
+	proc_table[3].ready=1;
+
 
 	k_reenter = 0;
 	ticks = 0;
 
+	pv=0;
+	in=0;
+	out=0;
+	empty.value=BUFFER_SIZE;
+	empty.p_que->size=0;
+	full.value=0;
+	full.p_que->size=0;
+	mutex.value=1;
+	mutex.p_que->size=0;
 	p_proc_ready	= proc_table;
 
         /* 初始化 8253 PIT */
@@ -96,9 +119,11 @@ void TestA()
 {
 	int i = 0;
 	while (1) {
-		disp_color_str("A.", BRIGHT | MAKE_COLOR(BLACK, RED));
-		disp_int(get_ticks());
-		milli_delay(200);
+		// disp_color_str("A.", BRIGHT | MAKE_COLOR(BLACK, RED));
+		// disp_int(get_ticks());
+		my_disp_str("A");
+		// process_sleep(1000000000000);
+		// milli_delay(200);
 	}
 }
 
@@ -107,23 +132,53 @@ void TestA()
  *======================================================================*/
 void TestB()
 {
-	int i = 0x1000;
+	// int i = 0x1000;
+
 	while(1){
-		disp_color_str("B.", BRIGHT | MAKE_COLOR(BLACK, RED));
-		disp_int(get_ticks());
-		milli_delay(200);
+		
+		my_disp_str("produce");
+		sem_p(empty);
+		sem_p(mutex);
+		B[in]=2;
+		in=(in+1)%BUFFER_SIZE;
+		sem_v(mutex);
+		sem_v(full);
+		process_sleep(2000);
+		// milli_delay(2000);
 	}
 }
 
 /*======================================================================*
-                               TestB
+                               TestC
  *======================================================================*/
 void TestC()
 {
-	int i = 0x2000;
 	while(1){
-		disp_color_str("C.", BRIGHT | MAKE_COLOR(BLACK, RED));
-		disp_int(get_ticks());
-		milli_delay(200);
+		sem_p(full);
+		sem_p(mutex);
+		disp_int(B[out]);
+		out=(out+1)%BUFFER_SIZE;
+		sem_v(mutex);
+		sem_v(empty);
+		my_disp_str("consume1");
+		process_sleep(2000);
+		// milli_delay(2000);
+	}
+}
+
+/*======================================================================*
+                               TestD
+ *======================================================================*/
+void TestD(){
+	while(1){
+		sem_p(full);
+		sem_p(mutex);
+		disp_int(B[out]);
+		out=(out+1)%BUFFER_SIZE;
+		sem_v(mutex);
+		sem_v(empty);
+		my_disp_str("consume2");
+		process_sleep(200);
+		// milli_delay(200);
 	}
 }

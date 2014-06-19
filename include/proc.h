@@ -36,6 +36,8 @@ typedef struct s_proc {
 
         int ticks;                 /* remained ticks */
         int priority;
+        int sleep_ticks;
+        int ready;
 
 	u32 pid;                   /* process id passed in from MM */
 	char p_name[16];           /* name of the process */
@@ -46,17 +48,35 @@ typedef struct s_task {
 	int	stacksize;
 	char	name[32];
 }TASK;
+typedef struct node  
+{  
+    PROCESS * p_proc; 
+    struct node* next;  
+}NODE;
 
-
+typedef struct queue{
+	NODE* front;
+	NODE* rear;
+	int size;
+}QUEUE;
+typedef struct semaphore
+{
+	int value;
+	QUEUE* p_que;
+}SEMAPHORE;
 /* Number of tasks */
-#define NR_TASKS	3
+#define NR_TASKS	4
+
+#define	BUFFER_SIZE  10
 
 /* stacks of tasks */
 #define STACK_SIZE_TESTA	0x8000
 #define STACK_SIZE_TESTB	0x8000
 #define STACK_SIZE_TESTC	0x8000
+#define STACK_SIZE_TESTD	0x8000
 
 #define STACK_SIZE_TOTAL	(STACK_SIZE_TESTA + \
 				STACK_SIZE_TESTB + \
-				STACK_SIZE_TESTC)
+				STACK_SIZE_TESTC + \
+				STACK_SIZE_TESTD)
 

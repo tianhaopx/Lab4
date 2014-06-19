@@ -340,10 +340,11 @@ save:
 ; ====================================================================================
 sys_call:
         call    save
-
+        push 	dword [p_proc_ready]
         sti
-
+        push 	ebx
         call    [sys_call_table + eax * 4]
+        add 	esp,4*2
         mov     [esi + EAXREG - P_STACKBASE], eax
 
         cli
