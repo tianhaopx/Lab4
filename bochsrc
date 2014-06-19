@@ -21,5 +21,6 @@ boot: a
 # disable the mouse
 mouse: enabled=0
 
+display_library: sdl
 # enable key mapping, using US layout as default.
-keyboard_mapping: enabled=1, map=/usr/share/bochs/keymaps/x11-pc-us.map
+# keyboard_mapping: enabled=1, map=/usr/share/bochs/keymaps/x11-pc-us.map

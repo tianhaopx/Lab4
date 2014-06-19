@@ -20,8 +20,7 @@ global	out_byte
 global	in_byte
 global  enable_irq
 global  disable_irq
-global	disable_int
-global	enable_int
+
 
 ; ========================================================================
 ;                  void disp_str(char * info);
@@ -196,9 +195,4 @@ enable_8:
         popf
         ret
 
-disable_int:
-	cli
-	ret
-enable_int:
-	sti
-	ret
+

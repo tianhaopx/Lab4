@@ -12,8 +12,19 @@
 #include "string.h"
 #include "proc.h"
 #include "global.h"
+#define N 10
+int buffer[N];
 
+SEMAPHORE sput,sget,s2;
+LIST sput_l,sget_l,s2_l;
+int put_ptr,get_ptr;
 
+// LIST em_l;
+void init_semaphore(SEMAPHORE* sema, LIST* sema_l, int k){
+	sema_l->p=0;
+	sema->value=k;
+	sema->list=sema_l;
+}
 /*======================================================================*
                             kernel_main
  *======================================================================*/
@@ -61,10 +72,23 @@ PUBLIC int kernel_main()
 		selector_ldt += 1 << 3;
 	}
 
-	proc_table[0].ticks = proc_table[0].priority = 150; /* 0x96 */
-	proc_table[1].ticks = proc_table[1].priority =  50; /* 0x32 */
-	proc_table[2].ticks = proc_table[2].priority =  30; /* 0x1E */
-
+	proc_table[0].ticks = proc_table[0].priority =	50;
+	proc_table[1].ticks = proc_table[1].priority =  80;
+	proc_table[2].ticks = proc_table[2].priority =  1;
+	proc_table[3].ticks = proc_table[3].priority =  1;
+	proc_table[0].sleep_ticks = 0;
+	proc_table[1].sleep_ticks = 0;
+	proc_table[2].sleep_ticks = 0;
+	proc_table[3].sleep_ticks = 0;
+	proc_table[0].active = 1;
+	proc_table[1].active = 1;
+	proc_table[2].active = 1;
+	proc_table[3].active = 1;
+	init_semaphore(&sput,&sput_l,N);
+	init_semaphore(&sget,&sget_l,0);
+	init_semaphore(&s2,&s2_l,1);
+	put_ptr=0;
+	get_ptr=0;
 	k_reenter = 0;
 	ticks = 0;
 
@@ -77,53 +101,108 @@ PUBLIC int kernel_main()
 
         put_irq_handler(CLOCK_IRQ, clock_handler); /* 设定时钟中断处理程序 */
         enable_irq(CLOCK_IRQ);                     /* 让8259A可以接收时钟中断 */
-
 	disp_pos = 0;
 	for (i = 0; i < 80*25; i++) {
 		disp_str(" ");
 	}
 	disp_pos = 0;
-
 	restart();
 
 	while(1){}
 }
 
 /*======================================================================*
-                               TestA
+                     	Normal Progress for Task Invoker
  *======================================================================*/
-void TestA()
+void Normal()
 {
-	int i = 0;
+	//int i = 0;
 	while (1) {
-		disp_color_str("A.", BRIGHT | MAKE_COLOR(BLACK, RED));
-		disp_int(get_ticks());
-		milli_delay(200);
+		//disp_str("Normal.");
+		//disp_int(get_ticks());
+		//syscall_disp_str("hhahdhahhdahdh");
+		//sys_prog_sleep(1);
+		// sys_sem_v(&empty);
+		syscall_disp_str("A ");
+		milli_delay(100);
 	}
 }
 
 /*======================================================================*
-                               TestB
+                               Producer Task
  *======================================================================*/
-void TestB()
+void Producer()
 {
-	int i = 0x1000;
+	//int i = 0x1000;
 	while(1){
-		disp_color_str("B.", BRIGHT | MAKE_COLOR(BLACK, RED));
-		disp_int(get_ticks());
-		milli_delay(200);
+		//disp_str("Make ");
+		//EMAPHORE s;
+		sys_sem_p(&sput);
+	//	milli_delay(100);
+		//sys_sem_p(&s1);
+		syscall_disp_str("produce ");
+		buffer[put_ptr]=1;
+		if(put_ptr>=N-1){
+			// syscall_disp_str("Sleep Producer ");
+			sys_prog_sleep(100);
+		}
+		put_ptr=(put_ptr+1)%N;
+
+		//sys_sem_v(&s1);
+		sys_sem_v(&sget);
+		//disp_str("B.");
+		// milli_delay(100);
 	}
 }
 
 /*======================================================================*
-                               TestB
+                               Consumer Task
  *======================================================================*/
-void TestC()
+void Consumer_1()
 {
-	int i = 0x2000;
+	// int i = 0x2000;
 	while(1){
-		disp_color_str("C.", BRIGHT | MAKE_COLOR(BLACK, RED));
-		disp_int(get_ticks());
-		milli_delay(200);
+		int i;
+		//p_proc_ready->active=0;
+		sys_sem_p(&sget);
+    	sys_sem_p(&s2);
+    	if(get_ptr>=N-1){
+    		// syscall_disp_str("Sleep Consumer ");
+			sys_prog_sleep(100);
+		}
+   		//milli_delay(100);
+    	i= buffer[get_ptr];
+    	syscall_disp_str("consume1 ");
+    	get_ptr=(get_ptr+1)%N;
+    	sys_sem_v(&s2);
+    	sys_sem_v(&sput);
+    	//disp_str("Consume 1 ");
+    	// milli_delay(100);
+	}
+}
+
+/*======================================================================*
+                               Consumer Task
+ *======================================================================*/
+void Consumer_2()
+{
+	//int i = 0x2000;
+	while(1){
+		int i;
+		sys_sem_p(&sget);
+    	sys_sem_p(&s2);
+    	if(get_ptr>=N-1){
+    		// syscall_disp_str("Sleep Consumer ");
+			sys_prog_sleep(100);
+		}
+	 	//milli_delay(100);
+    	i= buffer[get_ptr];
+    	syscall_disp_str("consume2 ");
+    	get_ptr=(get_ptr+1)%N;
+    	sys_sem_v(&s2);
+    	sys_sem_v(&sput);
+    	// disp_str("Consume 2 ");
+    	// milli_delay(100);
+
 	}
 }

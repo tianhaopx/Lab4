@@ -4,7 +4,8 @@
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                                                     Forrest Yu, 2005
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
-
+#ifndef _ORANGE_PROC_H_
+#define _ORANGE_PROC_H_
 
 typedef struct s_stackframe {	/* proc_ptr points here				↑ Low			*/
 	u32	gs;		/* ┓						│			*/
@@ -27,7 +28,6 @@ typedef struct s_stackframe {	/* proc_ptr points here				↑ Low			*/
 	u32	ss;		/*  ┛						┷High			*/
 }STACK_FRAME;
 
-
 typedef struct s_proc {
 	STACK_FRAME regs;          /* process registers saved in stack frame */
 
@@ -36,7 +36,8 @@ typedef struct s_proc {
 
         int ticks;                 /* remained ticks */
         int priority;
-
+        int sleep_ticks;
+        int active;
 	u32 pid;                   /* process id passed in from MM */
 	char p_name[16];           /* name of the process */
 }PROCESS;
@@ -47,16 +48,41 @@ typedef struct s_task {
 	char	name[32];
 }TASK;
 
+// typedef struct s_node
+// {
+// 	PROCESS* proc;
+// 	NODE* next;
+// }NODE;
 
 /* Number of tasks */
-#define NR_TASKS	3
+#define NR_TASKS	4
 
 /* stacks of tasks */
-#define STACK_SIZE_TESTA	0x8000
-#define STACK_SIZE_TESTB	0x8000
-#define STACK_SIZE_TESTC	0x8000
+#define STACK_SIZE_NORMAL		0x8000
+#define STACK_SIZE_PRODUCER		0x8000
+#define STACK_SIZE_CONSUMER_1	0x8000
+#define STACK_SIZE_CONSUMER_2	0x8000
 
-#define STACK_SIZE_TOTAL	(STACK_SIZE_TESTA + \
-				STACK_SIZE_TESTB + \
-				STACK_SIZE_TESTC)
+#define STACK_SIZE_TOTAL	(STACK_SIZE_NORMAL + \
+				STACK_SIZE_PRODUCER	 + \
+				STACK_SIZE_CONSUMER_1 + \
+				STACK_SIZE_CONSUMER_2)
+
+typedef struct s_queue
+{
+	PROCESS* proc[NR_TASKS*2];
+	int p;
+	/* data */
+}LIST;
+
+typedef struct s_semaphore
+{
+	int value;
+	LIST* list;
+}SEMAPHORE;
+extern SEMAPHORE sput,sget,s2;
+extern LIST sput_l,sget_l,s2_l;
+extern int put_ptr;
+extern int get_ptr;
+#endif
 

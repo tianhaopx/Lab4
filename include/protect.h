@@ -145,6 +145,10 @@ typedef struct s_tss {
 
 /* 系统调用 */
 #define INT_VECTOR_SYS_CALL             0x90
+#define	INT_VECTOR_PROG_SLEEP			0x91
+#define	INT_VECTOR_DISP_STR				0x92
+#define	INT_VECTOR_SEM_P				0x93
+#define	INT_VECTOR_SEM_V				0x94
 
 /* 宏 */
 /* 线性地址 → 物理地址 */

@@ -21,14 +21,16 @@ PUBLIC void clock_handler(int irq)
 {
 	ticks++;
 	if(p_proc_ready->active>0){
-		if(!p_proc_ready->sleep_ticks)
-		{
-			p_proc_ready->ticks--;
-			//if (p_proc_ready->ticks > 0) {
-			//return;
-		//}
-		}
-	}
+	if(!p_proc_ready->sleep_ticks)
+	{
+	// 	p_proc_ready->sleep_ticks--;
+	// }
+	// else{
+		p_proc_ready->ticks--;
+		//if (p_proc_ready->ticks > 0) {
+		//return;
+	//}
+	}}
 	//disp_int(p_proc_ready);
 	//disp_str("^");
 	if (k_reenter != 0) {
